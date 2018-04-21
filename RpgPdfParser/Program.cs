@@ -8,6 +8,8 @@ namespace RpgPdfParser
 {
     internal static class Program
     {
+        private static TextToMonterDataParser m_parser;
+        
         public static void Main(string[] args)
         {
             Contract.Assert(args.Any() , "No arguments passed.");
@@ -19,9 +21,10 @@ namespace RpgPdfParser
             {
                 extractedText = PdfTextExtractor.GetTextFromPage(pdfReader, 208, new SimpleTextExtractionStrategy());
             }
+            
+            m_parser = new TextToMonterDataParser(extractedText);
+            var monsters = m_parser.GetMonsterData();
 
-            Console.WriteLine(extractedText);
-                
             Console.WriteLine("END");
             Console.ReadLine();
         }
