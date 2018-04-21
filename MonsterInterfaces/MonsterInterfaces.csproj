@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{83E03636-A90F-43AC-AD98-943C44B36C8F}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{EB6A98DD-F043-4295-A6F8-20984439F0DA}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RpgPdfParser</RootNamespace>
-    <AssemblyName>RpgPdfParser</AssemblyName>
+    <RootNamespace>MonsterInterfaces</RootNamespace>
+    <AssemblyName>MonsterInterfaces</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,31 +32,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="itextsharp, Version=5.5.13.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca">
-      <HintPath>..\packages\iTextSharp.5.5.13\lib\itextsharp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="IMonsterData.cs" />
+    <Compile Include="IMonsterDataFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TextToMonterDataParser.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EntityFramworkMonsters\EntityFramworkMonsters.csproj">
-      <Project>{376bd7c9-1e37-4f65-b99e-39516429022e}</Project>
-      <Name>EntityFramworkMonsters</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MonsterInterfaces\MonsterInterfaces.csproj">
-      <Project>{EB6A98DD-F043-4295-A6F8-20984439F0DA}</Project>
-      <Name>MonsterInterfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
