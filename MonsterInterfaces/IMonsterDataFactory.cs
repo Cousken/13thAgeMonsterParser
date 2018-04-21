@@ -1,6 +1,6 @@
 ﻿namespace RpgPdfParser
 {
-    public interface IMonsterData
+    public interface IMonsterDataFactory
     {
         
     }

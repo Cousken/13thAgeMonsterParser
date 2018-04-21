@@ -42,13 +42,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IMonsterData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextToMonterDataParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EntityFramworkMonsters\EntityFramworkMonsters.csproj">
+      <Project>{376bd7c9-1e37-4f65-b99e-39516429022e}</Project>
+      <Name>EntityFramworkMonsters</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MonsterInterfaces\MonsterInterfaces.csproj">
+      <Project>{EB6A98DD-F043-4295-A6F8-20984439F0DA}</Project>
+      <Name>MonsterInterfaces</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
