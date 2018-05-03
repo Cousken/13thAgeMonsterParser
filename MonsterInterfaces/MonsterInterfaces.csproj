@@ -38,8 +38,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attack\IMonsterAttack.cs" />
     <Compile Include="IMonsterData.cs" />
     <Compile Include="IMonsterDataFactory.cs" />
+    <Compile Include="IMonsterWord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

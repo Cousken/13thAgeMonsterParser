@@ -1,4 +1,4 @@
-﻿﻿namespace RpgPdfParser
+﻿﻿namespace MonsterInterfaces
 {
     public interface IMonsterDataFactory
     {
