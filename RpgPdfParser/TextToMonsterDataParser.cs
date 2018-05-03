@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using iTextSharp.text;
+using MonsterInterfaces;
 
 namespace RpgPdfParser
 {
-    public class TextToMonterDataParser
+    public class TextToMonsterDataParser
     {
         private readonly string m_originalText;
         private static readonly int Cores = Environment.ProcessorCount;
 
-        public TextToMonterDataParser(string text)
+        public TextToMonsterDataParser(string text)
         {
             m_originalText = text;
         }
