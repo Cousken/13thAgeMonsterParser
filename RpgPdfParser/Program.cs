@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using iText.Kernel.Font;
+using System.Text;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Filter;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using iText.Layout.Element;
 
 namespace RpgPdfParser
 {
@@ -22,8 +21,7 @@ namespace RpgPdfParser
 
     internal static class Program
     {
-        private static TextToMonsterDataParser m_parser;
-        public static List<StringWithFont> TextWithWidth = new List<StringWithFont>();
+        public static LinkedList<StringWithFont> TextWithWidth = new LinkedList<StringWithFont>();
 
         public static void Main(string[] args)
         {
@@ -32,40 +30,78 @@ namespace RpgPdfParser
             var path = args.First();
             var extractedText = string.Empty;
 
+            // monsters are on page 208 - 253
+
             using (var pdfReader = new PdfReader(path))
             {
+                var stringBuilder = new StringBuilder();
                 var pdfDocument = new PdfDocument(pdfReader);
-                var page = pdfDocument.GetPage(208);
-
-                var fontFilter = new CustomFilter(page.GetArtBox());
                 var listener = new FilteredEventListener();
+                CustomFilter customFilter = null;
+                SimpleTextExtractionStrategy extractionStrategy = null;
+                PdfCanvasProcessor pdfProcessor = null;
 
-                var extractionStrategy = listener.AttachEventListener(new SimpleTextExtractionStrategy(), fontFilter);
-                new PdfCanvasProcessor(listener).ProcessPageContent(pdfDocument.GetPage(208));
+                for (int i = 208; i <= 253; i++)
+                {
+                    Console.WriteLine(@"Reading page {0}.", i);
+                    var page = pdfDocument.GetPage(i);
 
-                extractedText = extractionStrategy.GetResultantText();
+                    if (pdfProcessor == null)
+                    {
+                        customFilter = new CustomFilter(page.GetArtBox());
+                        extractionStrategy = listener.AttachEventListener(new SimpleTextExtractionStrategy(), customFilter);
+                        pdfProcessor = new PdfCanvasProcessor(listener);
+                    }
+
+                    pdfProcessor.ProcessPageContent(page);
+                    stringBuilder.AppendLine(extractionStrategy.GetResultantText());
+
+                    if (Program.TextWithWidth.Last.Value.Equals(Program.TextWithWidth.Last.Previous.Value))
+                        Debugger.Break();
+                }
+
+                extractedText = stringBuilder.ToString();
             }
 
-            m_parser = new TextToMonsterDataParser(extractedText);
-            var monsters = m_parser.GetMonsterData();
+            //m_parser = new TextToMonsterDataParser(extractedText);
+            //var monsters = m_parser.GetMonsterData();
 
-            Console.WriteLine("END");
 
-            Console.WriteLine(extractedText);
+            Console.WriteLine("Read all text.");
             Console.ReadLine();
-            
-            foreach (var text in TextWithWidth)
-            {
-                Console.WriteLine("{0}({1})", text.String, text.Width);
-            }
+
+            if(System.IO.File.Exists(@"AllLines.txt"))
+                System.IO.File.Delete(@"AllLines.txt");
+
+            if (System.IO.File.Exists(@"EntireText.txt"))
+                System.IO.File.Delete(@"EntireText.txt");
+
+            Console.WriteLine("Printing text.");
+            System.IO.File.WriteAllText(@"EntireText.txt", extractedText);
+
+            Console.WriteLine("Found {0} duplicates.", TextWithWidth.Count(n => n.String.Equals("die’")));
+
+            Console.WriteLine("Printing lines.");
 
             
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"AllLines.txt", false))
+            {
+                var node = TextWithWidth.First;
+                while(node != null)
+                {
+                    file.WriteLine("{0}({1})", node.Value.String, node.Value.Width);
+                    node = node.Next;
+                }
+            }
+
             Console.ReadLine();
         }
     }
 
     public class CustomFilter : TextRegionEventFilter
     {
+        StringWithFont? previousEntry;
+
         public CustomFilter(Rectangle filterRect) : base(filterRect)
         {
         }
@@ -75,10 +111,13 @@ namespace RpgPdfParser
             if (!type.Equals(EventType.RENDER_TEXT))
                 return false;
 
-            var renderInfo = (TextRenderInfo) data;
+            var renderInfo = (TextRenderInfo)data;
             string text = renderInfo.GetText();
             if (text == null)
                 return false;
+
+            if (text.Equals("die’"))
+                Debugger.Break();
 
             var stringWithFont = new StringWithFont()
             {
@@ -86,26 +125,57 @@ namespace RpgPdfParser
                 Width = renderInfo.GetSingleSpaceWidth()
             };
 
-            if (!Program.TextWithWidth.Any())
+            if (previousEntry == null)
             {
-                Program.TextWithWidth.Add(stringWithFont);
+                Program.TextWithWidth.AddLast(stringWithFont);
+                previousEntry = stringWithFont;
                 return true;
             }
-                
-            var lastEntry = Program.TextWithWidth.Last();
 
-            if (Math.Abs(lastEntry.Width - stringWithFont.Width) < 0.001f)
+            var previousWidth = previousEntry.Value.Width;
+            var stringWithFontWidth = stringWithFont.Width;
+            var delta = Math.Abs(previousWidth - stringWithFontWidth);
+
+            if ((!previousEntry.Value.String.Equals(stringWithFont.String)
+                && previousEntry.Value.String.EndsWith(stringWithFont.String))
+                || previousEntry.Value.String.Equals(stringWithFont.String))
             {
-                Program.TextWithWidth.Remove(lastEntry);
-                lastEntry.String += stringWithFont.String;
-                Program.TextWithWidth.Add(lastEntry);
+                Program.TextWithWidth.RemoveLast();
+                previousEntry = new StringWithFont()
+                {
+                    String = previousEntry.Value.String,
+                    Width = Math.Max(stringWithFont.Width, previousWidth)
+                };
+                Program.TextWithWidth.AddLast(previousEntry.Value);
+            }
+            else if (delta < 0.001f
+                && !previousEntry.Value.String.Equals(stringWithFont.String))
+            {
+                DebugCheck(stringWithFont, previousEntry.Value);
+
+                Program.TextWithWidth.RemoveLast();
+                previousEntry = new StringWithFont()
+                {
+                    String = previousEntry.Value.String + stringWithFont.String,
+                    Width = Math.Max(stringWithFont.Width, previousWidth)
+                };
+
+                Program.TextWithWidth.AddLast(previousEntry.Value);
             }
             else
             {
-                Program.TextWithWidth.Add(stringWithFont);
+                DebugCheck(stringWithFont, previousEntry.Value);
+                Program.TextWithWidth.AddLast(stringWithFont);
+                previousEntry = stringWithFont;
             }
 
             return true;
+        }
+
+        private static void DebugCheck(StringWithFont current, StringWithFont previous)
+        {
+            if (previous.String.Equals(current.String))
+                Debugger.Break();
         }
     }
 }
